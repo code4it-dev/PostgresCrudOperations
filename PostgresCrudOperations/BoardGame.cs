@@ -1,5 +1,3 @@
-using System;
-
 namespace PostgresCrudOperations
 {
     public class BoardGame

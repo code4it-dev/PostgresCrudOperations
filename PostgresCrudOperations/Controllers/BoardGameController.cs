@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -21,8 +20,6 @@ namespace PostgresCrudOperations.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BoardGame>>> Get()
         {
-            var version = await _boardGameRepository.GetVersion();
-
             var allGames = await _boardGameRepository.GetAll();
             return Ok(allGames);
         }
@@ -32,22 +29,16 @@ namespace PostgresCrudOperations.Controllers
         public async Task<ActionResult<BoardGame>> Get(int id)
         {
             var game = await _boardGameRepository.Get(id);
-            return Ok(game);
+            if (game != null)
+                return Ok(game);
+            else
+                return NotFound();
         }
 
         // POST api/<BoardGameController>
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] BoardGame game)
         {
-            //game = new BoardGame
-            //{
-            //    Id = DateTime.UtcNow.Second,
-            //    Name = "NAme",
-            //    MaxPlayers = 100,
-            //    MinPlayers = 4983,
-            //    AverageDuration = 438
-            //};
-
             await _boardGameRepository.Add(game);
             return Ok();
         }
