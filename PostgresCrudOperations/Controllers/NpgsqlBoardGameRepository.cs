@@ -91,21 +91,20 @@ namespace PostgresCrudOperations.Controllers
             }
         }
 
-        public Task<string> GetVersion()
+        public async Task<string> GetVersion()
         {
             var sql = "SELECT version()";
 
             using var cmd = new NpgsqlCommand(sql, connection);
 
-            var version = cmd.ExecuteScalar().ToString();
+            var versionObject = await cmd.ExecuteScalarAsync();
 
-            return Task.FromResult(version);
+            return versionObject.ToString();
         }
 
-        public void CreateTableIfNotExists()
+        public async Task CreateTableIfNotExists()
         {
-            var version = GetVersion().GetAwaiter().GetResult();
-            CreateTable().GetAwaiter().GetResult();
+            await CreateTable();
         }
 
         private static BoardGame ReadBoardGame(NpgsqlDataReader reader)

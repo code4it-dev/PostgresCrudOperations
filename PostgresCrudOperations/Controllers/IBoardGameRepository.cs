@@ -17,6 +17,6 @@ namespace PostgresCrudOperations.Controllers
 
         Task<string> GetVersion();
 
-        void CreateTableIfNotExists();
+        Task CreateTableIfNotExists();
     }
 }
