@@ -7,7 +7,10 @@ namespace PostgresCrudOperations.Controllers
 {
     public class NpgsqlBoardGameRepository : IBoardGameRepository
     {
-        private const string CONNECTION_STRING = "Host=localhost:5455;Username=postgresUser;Password=postgresPW;Database=postgresDB";
+        private const string CONNECTION_STRING = "Host=localhost:5455;" +
+            "Username=postgresUser;" +
+            "Password=postgresPW;" +
+            "Database=postgresDB";
 
         private const string TABLE_NAME = "Games";
 
@@ -36,7 +39,8 @@ namespace PostgresCrudOperations.Controllers
 
         public async Task Delete(int id)
         {
-            await using (var cmd = new NpgsqlCommand($"DELETE FROM {TABLE_NAME} WHERE ID=(@p)", connection))
+            string commandText = $"DELETE FROM {TABLE_NAME} WHERE ID=(@p)";
+            await using (var cmd = new NpgsqlCommand(commandText, connection))
             {
                 cmd.Parameters.AddWithValue("p", id);
                 await cmd.ExecuteNonQueryAsync();
@@ -45,7 +49,8 @@ namespace PostgresCrudOperations.Controllers
 
         public async Task<BoardGame> Get(int id)
         {
-            await using (NpgsqlCommand cmd = new NpgsqlCommand($"SELECT * FROM {TABLE_NAME} WHERE ID = @id", connection))
+            string commandText = $"SELECT * FROM {TABLE_NAME} WHERE ID = @id";
+            await using (NpgsqlCommand cmd = new NpgsqlCommand(commandText, connection))
             {
                 cmd.Parameters.AddWithValue("id", id);
 
@@ -79,6 +84,7 @@ namespace PostgresCrudOperations.Controllers
             var commandText = $@"UPDATE {TABLE_NAME}
                         SET Name = @name, MinPlayers = @minPl, MaxPlayers = @maxPl, AverageDuration = @avgDur
                         WHERE id = @id";
+
             await using (var cmd = new NpgsqlCommand(commandText, connection))
             {
                 cmd.Parameters.AddWithValue("id", game.Id);
@@ -97,20 +103,32 @@ namespace PostgresCrudOperations.Controllers
 
             using var cmd = new NpgsqlCommand(sql, connection);
 
-            var versionObject = await cmd.ExecuteScalarAsync();
+            var versionFromQuery = (await cmd.ExecuteScalarAsync()).ToString();
+            var versionFromConnection = connection.PostgreSqlVersion;
 
-            return versionObject.ToString();
+            return versionFromQuery;
         }
 
         public async Task CreateTableIfNotExists()
         {
-            await CreateTable();
+            var sql = $"CREATE TABLE if not exists {TABLE_NAME}" +
+                $"(" +
+                $"id serial PRIMARY KEY, " +
+                $"Name VARCHAR (200) NOT NULL, " +
+                $"MinPlayers SMALLINT NOT NULL, " +
+                $"MaxPlayers SMALLINT, " +
+                $"AverageDuration SMALLINT" +
+                $")";
+
+            using var cmd = new NpgsqlCommand(sql, connection);
+
+            await cmd.ExecuteNonQueryAsync();
         }
 
         private static BoardGame ReadBoardGame(NpgsqlDataReader reader)
         {
             int? id = reader["id"] as int?;
-            string n = reader["name"] as string;
+            string name = reader["name"] as string;
             short? minPlayers = reader["minplayers"] as Int16?;
             short? maxPlayers = reader["maxplayers"] as Int16?;
             short? averageDuration = reader["averageduration"] as Int16?;
@@ -118,21 +136,12 @@ namespace PostgresCrudOperations.Controllers
             BoardGame game = new BoardGame
             {
                 Id = id.Value,
-                Name = n,
+                Name = name,
                 MinPlayers = minPlayers.Value,
                 MaxPlayers = maxPlayers.Value,
                 AverageDuration = averageDuration.Value
             };
             return game;
-        }
-
-        private async Task CreateTable()
-        {
-            var sql = $"CREATE TABLE if not exists {TABLE_NAME}(id serial PRIMARY KEY, Name VARCHAR (200) NOT NULL, MinPlayers SMALLINT NOT NULL, MaxPlayers SMALLINT, AverageDuration SMALLINT)";
-
-            using var cmd = new NpgsqlCommand(sql, connection);
-
-            await cmd.ExecuteScalarAsync();
         }
     }
 }

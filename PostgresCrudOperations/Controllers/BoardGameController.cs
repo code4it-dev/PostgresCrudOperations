@@ -14,7 +14,8 @@ namespace PostgresCrudOperations.Controllers
         {
             _boardGameRepository = boardGameRepository;
 
-            Task.Run(() => _boardGameRepository.CreateTableIfNotExists());
+            _boardGameRepository.CreateTableIfNotExists().GetAwaiter();
+            var version = _boardGameRepository.GetVersion().GetAwaiter().GetResult();
         }
 
         // GET: api/<BoardGameController>
