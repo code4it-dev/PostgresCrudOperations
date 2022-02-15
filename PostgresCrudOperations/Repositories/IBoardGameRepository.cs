@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace PostgresCrudOperations.Controllers
+namespace PostgresCrudOperations.Repositories
 {
     public interface IBoardGameRepository
     {
@@ -9,7 +9,7 @@ namespace PostgresCrudOperations.Controllers
 
         Task<BoardGame> Get(int id);
 
-        Task Add(BoardGame value);
+        Task Add(BoardGame game);
 
         Task Update(int id, BoardGame game);
 

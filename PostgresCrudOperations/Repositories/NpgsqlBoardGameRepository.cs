@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace PostgresCrudOperations.Controllers
+namespace PostgresCrudOperations.Repositories
 {
     public class NpgsqlBoardGameRepository : IBoardGameRepository
     {
@@ -68,7 +68,8 @@ namespace PostgresCrudOperations.Controllers
         {
             List<BoardGame> games = new List<BoardGame>();
 
-            await using (NpgsqlCommand cmd = new NpgsqlCommand($"SELECT * FROM {TABLE_NAME}", connection))
+            string commandText = $"SELECT * FROM {TABLE_NAME}";
+            await using (NpgsqlCommand cmd = new NpgsqlCommand(commandText, connection))
             await using (NpgsqlDataReader reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {

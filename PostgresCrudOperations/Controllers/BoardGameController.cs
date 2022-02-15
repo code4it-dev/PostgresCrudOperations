@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PostgresCrudOperations.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ namespace PostgresCrudOperations.Controllers
         {
             _boardGameRepository = boardGameRepository;
 
-            _boardGameRepository.CreateTableIfNotExists().GetAwaiter();
+            _boardGameRepository.CreateTableIfNotExists().GetAwaiter().GetResult();
             var version = _boardGameRepository.GetVersion().GetAwaiter().GetResult();
         }
 
