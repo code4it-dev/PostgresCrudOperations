@@ -24,6 +24,8 @@ namespace PostgresCrudOperations
             services.AddSingleton<IBoardGameRepository, DapperBoardGameRepository>();
 
             services.AddControllers();
+            services.AddDbContext<BoardGamesContext>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "PostgresCrudOperations", Version = "v1" });

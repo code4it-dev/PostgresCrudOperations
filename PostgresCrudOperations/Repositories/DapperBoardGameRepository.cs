@@ -7,10 +7,6 @@ namespace PostgresCrudOperations.Repositories
 {
     public class DapperBoardGameRepository : IBoardGameRepository
     {
-        /*
-         Install Dapper:
-         */
-
         private const string CONNECTION_STRING = "Host=localhost:5455;" +
                     "Username=postgresUser;" +
                     "Password=postgresPW;" +
