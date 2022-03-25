@@ -14,7 +14,10 @@ namespace PostgresCrudOperations.Repositories
         Task Update(int id, BoardGame game);
 
         Task Delete(int id);
+    }
 
+    public interface IAdditionalDbOperations
+    {
         Task<string> GetVersion();
 
         Task CreateTableIfNotExists();

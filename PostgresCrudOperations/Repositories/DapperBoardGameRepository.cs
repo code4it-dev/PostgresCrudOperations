@@ -5,12 +5,47 @@ using System.Threading.Tasks;
 
 namespace PostgresCrudOperations.Repositories
 {
+    public class DapperAdditionalDbOperations : IAdditionalDbOperations
+    {
+        private const string CONNECTION_STRING = "Host=localhost:5455;" +
+                   "Username=postgresUser;" +
+                   "Password=postgresPW;" +
+                   "Database=postgresDB";
+
+        private const string TABLE_NAME = "Games";
+        private readonly NpgsqlConnection connection;
+
+        public DapperAdditionalDbOperations()
+        {
+            connection = new NpgsqlConnection(CONNECTION_STRING);
+            connection.Open();
+        }
+
+        public async Task CreateTableIfNotExists()
+        {
+            var sql = $"CREATE TABLE if not exists {TABLE_NAME}" +
+                     $"(" +
+                     $"id serial PRIMARY KEY, " +
+                     $"Name VARCHAR (200) NOT NULL, " +
+                     $"MinPlayers SMALLINT NOT NULL, " +
+                     $"MaxPlayers SMALLINT, " +
+                     $"AverageDuration SMALLINT" +
+                     $")";
+
+            await connection.ExecuteAsync(sql);
+        }
+
+        public async Task<string> GetVersion()
+        {
+            var commandText = "SELECT version()";
+
+            var value = await connection.ExecuteScalarAsync<string>(commandText);
+            return value;
+        }
+    }
+
     public class DapperBoardGameRepository : IBoardGameRepository
     {
-        /*
-         Install Dapper:
-         */
-
         private const string CONNECTION_STRING = "Host=localhost:5455;" +
                     "Username=postgresUser;" +
                     "Password=postgresPW;" +
@@ -41,20 +76,6 @@ namespace PostgresCrudOperations.Repositories
             await connection.ExecuteAsync(commandText, queryArguments);
         }
 
-        public async Task CreateTableIfNotExists()
-        {
-            var sql = $"CREATE TABLE if not exists {TABLE_NAME}" +
-                     $"(" +
-                     $"id serial PRIMARY KEY, " +
-                     $"Name VARCHAR (200) NOT NULL, " +
-                     $"MinPlayers SMALLINT NOT NULL, " +
-                     $"MaxPlayers SMALLINT, " +
-                     $"AverageDuration SMALLINT" +
-                     $")";
-
-            await connection.ExecuteAsync(sql);
-        }
-
         public async Task Delete(int id)
         {
             string commandText = $"DELETE FROM {TABLE_NAME} WHERE ID=(@p)";
@@ -82,14 +103,6 @@ namespace PostgresCrudOperations.Repositories
             var games = await connection.QueryAsync<BoardGame>(commandText);
 
             return games;
-        }
-
-        public async Task<string> GetVersion()
-        {
-            var commandText = "SELECT version()";
-
-            var value = await connection.ExecuteScalarAsync<string>(commandText);
-            return value;
         }
 
         public async Task Update(int id, BoardGame game)
