@@ -5,6 +5,52 @@ using System.Threading.Tasks;
 
 namespace PostgresCrudOperations.Repositories
 {
+    public class NpgsqlAdditionalDbOperations : IAdditionalDbOperations
+    {
+        private const string CONNECTION_STRING = "Host=localhost:5455;" +
+          "Username=postgresUser;" +
+          "Password=postgresPW;" +
+          "Database=postgresDB";
+
+        private const string TABLE_NAME = "Games";
+
+        private NpgsqlConnection connection;
+
+        public NpgsqlAdditionalDbOperations()
+        {
+            connection = new NpgsqlConnection(CONNECTION_STRING);
+            connection.Open();
+        }
+
+        public async Task<string> GetVersion()
+        {
+            var sql = "SELECT version()";
+
+            using var cmd = new NpgsqlCommand(sql, connection);
+
+            var versionFromQuery = (await cmd.ExecuteScalarAsync()).ToString();
+            var versionFromConnection = connection.PostgreSqlVersion;
+
+            return versionFromQuery;
+        }
+
+        public async Task CreateTableIfNotExists()
+        {
+            var sql = $"CREATE TABLE if not exists {TABLE_NAME}" +
+                $"(" +
+                $"id serial PRIMARY KEY, " +
+                $"Name VARCHAR (200) NOT NULL, " +
+                $"MinPlayers SMALLINT NOT NULL, " +
+                $"MaxPlayers SMALLINT, " +
+                $"AverageDuration SMALLINT" +
+                $")";
+
+            using var cmd = new NpgsqlCommand(sql, connection);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+    }
+
     public class NpgsqlBoardGameRepository : IBoardGameRepository
     {
         private const string CONNECTION_STRING = "Host=localhost:5455;" +
@@ -96,34 +142,6 @@ namespace PostgresCrudOperations.Repositories
 
                 await cmd.ExecuteNonQueryAsync();
             }
-        }
-
-        public async Task<string> GetVersion()
-        {
-            var sql = "SELECT version()";
-
-            using var cmd = new NpgsqlCommand(sql, connection);
-
-            var versionFromQuery = (await cmd.ExecuteScalarAsync()).ToString();
-            var versionFromConnection = connection.PostgreSqlVersion;
-
-            return versionFromQuery;
-        }
-
-        public async Task CreateTableIfNotExists()
-        {
-            var sql = $"CREATE TABLE if not exists {TABLE_NAME}" +
-                $"(" +
-                $"id serial PRIMARY KEY, " +
-                $"Name VARCHAR (200) NOT NULL, " +
-                $"MinPlayers SMALLINT NOT NULL, " +
-                $"MaxPlayers SMALLINT, " +
-                $"AverageDuration SMALLINT" +
-                $")";
-
-            using var cmd = new NpgsqlCommand(sql, connection);
-
-            await cmd.ExecuteNonQueryAsync();
         }
 
         private static BoardGame ReadBoardGame(NpgsqlDataReader reader)

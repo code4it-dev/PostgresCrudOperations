@@ -4,35 +4,36 @@ using System.Threading.Tasks;
 
 namespace PostgresCrudOperations.Repositories
 {
-
     public class BoardGamesContext : DbContext
     {
-        public DbSet<BoardGame> Games { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql(CONNECTION_STRING);
-        private const string CONNECTION_STRING = "Host=localhost:5455;" +
+        private const string CONNECTION_STRING = "Host=localhost;Port=5455;" +
                  "Username=postgresUser;" +
                  "Password=postgresPW;" +
                  "Database=postgresDB";
+
+        public DbSet<BoardGame> Games { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseNpgsql(CONNECTION_STRING);
+            base.OnConfiguring(optionsBuilder);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<BoardGame>(e => e.ToTable("games"));
+            base.OnModelCreating(modelBuilder);
+        }
     }
 
     public class EntityFrameworkBoardGameRepository : IBoardGameRepository
     {
-        //Npgsql.EntityFrameworkCore.PostgreSQL (usa versione 5.0.10)
-
-
-        //private const string CONNECTION_STRING = "Host=localhost:5455;" +
-        //         "Username=postgresUser;" +
-        //         "Password=postgresPW;" +
-        //         "Database=postgresDB";
-
-        private const string TABLE_NAME = "Games";
         public async Task Add(BoardGame game)
         {
             using (var db = new BoardGamesContext())
             {
                 await db.Games.AddAsync(game);
+                await db.SaveChangesAsync();
             }
         }
 
@@ -46,9 +47,11 @@ namespace PostgresCrudOperations.Repositories
             using (var db = new BoardGamesContext())
             {
                 var game = await db.Games.FindAsync(id);
-                if (game == null) return;
+                if (game == null)
+                    return;
 
                 db.Games.Remove(game);
+                await db.SaveChangesAsync();
             }
         }
 
@@ -71,7 +74,6 @@ namespace PostgresCrudOperations.Repositories
         public Task<string> GetVersion()
         {
             return Task.FromResult("");
-
         }
 
         public async Task Update(int id, BoardGame game)
@@ -79,6 +81,7 @@ namespace PostgresCrudOperations.Repositories
             using (var db = new BoardGamesContext())
             {
                 db.Games.Update(game);
+                await db.SaveChangesAsync();
             }
         }
     }

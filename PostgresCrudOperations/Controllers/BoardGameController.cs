@@ -11,12 +11,12 @@ namespace PostgresCrudOperations.Controllers
     {
         private readonly IBoardGameRepository _boardGameRepository;
 
-        public BoardGameController(IBoardGameRepository boardGameRepository)
+        public BoardGameController(IBoardGameRepository boardGameRepository, IAdditionalDbOperations additionalDbOperations)
         {
             _boardGameRepository = boardGameRepository;
 
-            _boardGameRepository.CreateTableIfNotExists().GetAwaiter().GetResult();
-            var version = _boardGameRepository.GetVersion().GetAwaiter().GetResult();
+            additionalDbOperations.CreateTableIfNotExists().GetAwaiter().GetResult();
+            additionalDbOperations.GetVersion().GetAwaiter().GetResult();
         }
 
         // GET: api/<BoardGameController>

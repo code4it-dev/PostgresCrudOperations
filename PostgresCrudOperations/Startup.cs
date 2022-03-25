@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using PostgresCrudOperations.Controllers;
 using PostgresCrudOperations.Repositories;
 
 namespace PostgresCrudOperations
@@ -21,7 +20,8 @@ namespace PostgresCrudOperations
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IBoardGameRepository, DapperBoardGameRepository>();
+            services.AddSingleton<IBoardGameRepository, EntityFrameworkBoardGameRepository>();
+            services.AddSingleton<IAdditionalDbOperations, DapperAdditionalDbOperations>();
 
             services.AddControllers();
             services.AddDbContext<BoardGamesContext>();
